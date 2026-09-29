@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Jayaditya Kumar | About & Portfolio</title>
+    <meta name="description" content="Portfolio of Jayaditya Kumar, a CA Aspirant bridging finance, AI, and creative design.">
+    <meta name="theme-color" content="#09090b">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'] },
+                    colors: { primary: '#8b5cf6', secondary: '#06b6d4', accent: '#f43f5e', darkbg: '#09090b', cardbg: '#18181b' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #09090b; color: #f8fafc; position: relative; }
+        #canvas-container { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+        .accordion-content { display: grid; grid-template-rows: 0fr; opacity: 0; overflow: hidden; transition: grid-template-rows 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease-out; }
+        .accordion-content > .accordion-inner { overflow: hidden; min-height: 0; }
+        .accordion-content > .accordion-inner p { transform: translateY(-6px); opacity: 0; transition: transform 0.4s ease 0.05s, opacity 0.35s ease 0.05s; }
+        .accordion-item.active .accordion-content { grid-template-rows: 1fr; opacity: 1; }
+        .accordion-item.active .accordion-content > .accordion-inner p { transform: translateY(0); opacity: 1; }
+        .accordion-item.active .accordion-icon { transform: rotate(180deg); }
+        .accordion-header { transition: color 0.25s ease; }
+        .accordion-item.active .accordion-header { color: #06b6d4; }
+        .text-gradient { background: linear-gradient(to right, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .text-glow { text-shadow: 0 0 15px rgba(139, 92, 246, 0.6); }
+        .cyan-glow { text-shadow: 0 0 15px rgba(6, 182, 212, 0.6); }
+        .anime-cut { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); }
+        .hover-card { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease; position: relative; overflow: hidden; background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(139, 92, 246, 0.2); }
+        .hover-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent); transform: skewX(-20deg); transition: left 0.5s ease; }
+        .hover-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 35px -5px rgba(139, 92, 246, 0.25), 0 0 15px rgba(6, 182, 212, 0.15); border-color: rgba(139, 92, 246, 0.6); }
+        .hover-card:hover::before { left: 200%; }
+        .portrait-shell { position: relative; width: min(100%, 520px); aspect-ratio: 1 / 1; display: grid; place-items: center; isolation: isolate; }
+        .portrait-shell::before, .portrait-shell::after { content: ''; position: absolute; inset: 7%; border: 1px solid rgba(6, 182, 212, 0.45); clip-path: polygon(8% 0, 92% 0, 100% 8%, 100% 92%, 92% 100%, 8% 100%, 0 92%, 0 8%); pointer-events: none; }
+        .portrait-shell::after { inset: 2%; border-color: rgba(139, 92, 246, 0.35); transform: rotate(1.5deg); box-shadow: 0 0 35px rgba(139, 92, 246, 0.16), inset 0 0 35px rgba(6, 182, 212, 0.06); }
+        .portrait-frame { position: relative; width: 82%; height: 82%; padding: 8px; background: linear-gradient(135deg, rgba(139, 92, 246, .9), rgba(6, 182, 212, .9)); clip-path: polygon(7% 0, 93% 0, 100% 7%, 100% 93%, 93% 100%, 7% 100%, 0 93%, 0 7%); box-shadow: 0 0 45px rgba(139, 92, 246, .25), 0 0 80px rgba(6, 182, 212, .12); animation: portraitFloat 5s ease-in-out infinite; }
+        .portrait-frame::before { content: ''; position: absolute; inset: 2px; background: #09090b; clip-path: inherit; }
+        .portrait-image { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; display: block; clip-path: polygon(7% 0, 93% 0, 100% 7%, 100% 93%, 93% 100%, 7% 100%, 0 93%, 0 7%); filter: saturate(.92) contrast(1.04); }
+        .scanline { position: absolute; z-index: 2; left: 12%; right: 12%; top: 18%; height: 1px; background: rgba(255,255,255,.55); box-shadow: 0 0 12px rgba(6,182,212,.8); animation: scan 3.8s linear infinite; pointer-events: none; }
+        .tech-corner { position: absolute; z-index: 3; font-family: Rajdhani, sans-serif; font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: #cbd5e1; background: rgba(9,9,11,.82); border: 1px solid rgba(6,182,212,.35); padding: .35rem .6rem; backdrop-filter: blur(8px); }
+        .tech-corner.top { top: 6%; right: 0; }
+        .tech-corner.bottom { bottom: 6%; left: 0; }
+        .portrait-badge { position: absolute; z-index: 4; bottom: 12%; right: 4%; padding: .55rem .8rem; font-family: Rajdhani, sans-serif; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: white; background: rgba(139,92,246,.2); border: 1px solid rgba(139,92,246,.55); box-shadow: 0 0 18px rgba(139,92,246,.25); backdrop-filter: blur(10px); }
+        @keyframes portraitFloat { 0%,100% { transform: translateY(0) rotate(-.4deg); } 50% { transform: translateY(-8px) rotate(.4deg); } }
+        @keyframes scan { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .8; } 85% { opacity: .8; } 100% { transform: translateY(260px); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .portrait-frame, .scanline { animation: none; } }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary selection:text-white">
+
+<div id="canvas-container"></div>
+
+<header class="fixed w-full top-0 z-50 bg-darkbg/60 backdrop-blur-md border-b border-slate-800/50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <div class="flex-shrink-0 font-tech">
+                <a href="#" class="text-3xl font-bold tracking-wider text-white flex items-center">
+                    <span class="text-primary mr-1">[</span>JAYADITYA<span class="text-secondary ml-1">]</span>
+                </a>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-8 items-center text-sm font-medium text-slate-300">
+                    <li><a href="#about" class="hover:text-primary transition-colors">About</a></li>
+                    <li><a href="#skills" class="hover:text-primary transition-colors">Skills</a></li>
+                    <li><a href="#hobbies" class="hover:text-primary transition-colors">Hobbies</a></li>
+                    <li><a href="intersests.html" class="hover:text-primary transition-colors">Interests</a></li>
+                    <li><a href="#faq" class="hover:text-primary transition-colors">FAQ</a></li>
+                    <li><a href="#socials" class="hover:text-primary transition-colors">Socials</a></li>
+                    <li><a href="#contact" class="font-tech tracking-wider uppercase text-xs bg-primary/10 text-primary border border-primary/30 px-5 py-2 hover:bg-primary hover:text-white transition-all anime-cut">Link Start</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main class="pt-20">
+    <section id="about" class="relative overflow-hidden py-24 sm:py-32 lg:py-40 border-b border-slate-800">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-20">
+                <div class="max-w-3xl lg:w-1/2">
+                    <div class="inline-flex items-center px-4 py-1.5 bg-slate-900/80 border border-primary/30 font-tech text-sm tracking-widest text-primary mb-6 anime-cut uppercase shadow-[0_0_10px_rgba(139,92,246,0.2)]">
+                        <span class="w-2 h-2 rounded-full bg-secondary mr-3 animate-pulse"></span>System Online
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4">Hi, I'm <span class="text-gradient text-glow">Jayaditya Kumar</span></h1>
+                    <h2 class="text-lg sm:text-xl text-slate-300 font-medium mb-8 font-tech tracking-wider border-l-2 border-secondary pl-4 py-1 bg-gradient-to-r from-secondary/10 to-transparent">
+                        CA Aspirant <span class="text-primary mx-2">|</span> AI & CS Enthusiast <span class="text-primary mx-2">|</span> Creative Designer
+                    </h2>
+                    <p class="text-lg text-slate-400 leading-relaxed mb-10 max-w-xl">
+                        Bridging the gap between professional accounting, artificial intelligence, and creative design. Fully proficient in English (C1) and a distinguished scholar with <span class="text-secondary font-bold">30 Olympiad medals</span> (Gold, Silver, and Bronze) and <span class="text-secondary font-bold">CBSE 10 Top Scorer: )</span> Passionate about multidimensional problem-solving.
+                    </p>
+                    <div class="flex flex-wrap gap-4 font-tech tracking-wider uppercase text-sm">
+                        <a href="#skills" class="px-8 py-3 bg-primary text-white font-bold hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(139,92,246,0.4)] anime-cut">Initialize Skills</a>
+                        <a href="#socials" class="px-8 py-3 bg-transparent border border-secondary text-secondary font-bold hover:bg-secondary hover:text-darkbg transition-colors shadow-[0_0_15px_rgba(6,182,212,0.2)] anime-cut">Social Networks</a>
+                    </div>
+                </div>
+                <div class="relative z-10 flex flex-col items-center w-full lg:w-1/2">
+                    <div class="portrait-shell">
+                        <div class="tech-corner top">IDENTITY // ONLINE</div>
+                        <div class="tech-corner bottom">JAYADITYA.OS / 01</div>
+                        <div class="portrait-frame">
+                            <img src="assets/profile.png" alt="Illustrated portrait of Jayaditya Kumar" class="portrait-image" loading="eager">
+                            <div class="scanline"></div>
+                        </div>
+                        <div class="portrait-badge">Finance × AI × Design</div>
+                    </div>
+                    <div class="bg-cyan-900/20 border border-cyan-500/30 backdrop-blur-md p-4 w-full max-w-xl anime-cut relative overflow-hidden group hover:border-cyan-500/60 transition-colors mt-3">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-cyan-400 shadow-[0_0_10px_#06b6d4]"></div>
+                        <p class="text-slate-200 font-tech text-lg sm:text-xl tracking-widest pl-3">"爪ㄖ几ㄖ 几ㄖ 卂山卂尺乇 , alacrité"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="py-24 border-b border-slate-800 bg-black/40 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 font-tech tracking-wider uppercase"><span class="text-slate-500">[</span> Core <span class="text-primary text-glow">Directives</span> <span class="text-slate-500">]</span></h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">The intersection of finance, logic, and creativity.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-8 anime-cut hover-card border border-primary/20">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6 shadow-[0_0_15px_rgba(139,92,246,0.3)]"><i class="fa-solid fa-file-invoice-dollar text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Chartered Accountancy</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Dedicated CA Aspirant journeying towards the finals. Strong focus on auditing, taxation, and comprehensive financial analysis.</p>
+                </div>
+                <div class="p-8 hover-card border border-secondary/20 rounded-xl">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 shadow-[0_0_15px_rgba(6,182,212,0.3)]"><i class="fa-solid fa-microchip text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">AI & Computer Science</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Passionate about the future of tech. Understanding artificial intelligence, algorithms, and how automation shapes modern business.</p>
+                </div>
+                <div class="p-8 hover-card border border-accent/20 rounded-xl">
+                    <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center text-accent mb-6 shadow-[0_0_15px_rgba(244,63,94,0.3)]"><i class="fa-solid fa-cube text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Creative Design</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Skilled in graphic design, vector branding, and 3D promotional animations. Bridging the gap between a product's function and its visual appeal.</p>
+                </div>
+                <div class="p-8 anime-cut hover-card border border-emerald-500/20" style="clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);">
+                    <div class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 mb-6 shadow-[0_0_15px_rgba(16,185,129,0.3)]"><i class="fa-solid fa-medal text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Academic Excellence</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Proven track record of high-level problem solving, proudly holding 30 Olympiad medals across Gold, Silver, and Bronze categories.</p>
+                </div>
+            </div>
+            <div class="mt-16 bg-cardbg/80 border border-primary/30 rounded-xl p-8 backdrop-blur-md text-center max-w-4xl mx-auto anime-cut hover-card shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+                <h3 class="text-2xl font-tech font-bold text-white mb-4 uppercase tracking-widest"><i class="fa-solid fa-bolt text-secondary mr-2"></i> AI Synergy Engine</h3>
+                <p class="text-slate-400 mb-6 text-sm">Input your industry to see a local simulation of how my hybrid skillset (Finance + AI + Design) applies to your specific domain.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <input type="text" id="industry-input" placeholder="e.g. Healthcare, Real Estate, Gaming..." class="bg-slate-950 border border-slate-700 rounded px-4 py-3 text-white focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary w-full sm:w-72 transition-colors">
+                    <button id="generate-synergy-btn" class="bg-primary/20 border border-primary hover:bg-primary text-white font-tech font-bold tracking-widest uppercase px-6 py-3 anime-cut transition-all shadow-[0_0_10px_rgba(139,92,246,0.2)] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]">Run Simulation</button>
+                </div>
+                <div id="synergy-output-container" class="mt-6 hidden">
+                    <div class="inline-flex items-center px-3 py-1 bg-secondary/20 border border-secondary/50 text-secondary text-xs font-tech uppercase tracking-widest mb-3 rounded-full"><span class="w-2 h-2 rounded-full bg-secondary mr-2 animate-pulse"></span> Analysis Complete</div>
+                    <p id="synergy-output" class="text-slate-300 text-lg italic border-l-2 border-secondary pl-4 text-left leading-relaxed"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="hobbies" class="py-24 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 font-tech tracking-wider uppercase"><span class="text-slate-500">[</span> Off-Duty <span class="text-secondary cyan-glow">Modules</span> <span class="text-slate-500">]</span></h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Fueling creativity outside the professional sphere.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-8 anime-cut hover-card border border-amber-500/20">
+                    <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 mb-6"><i class="fa-solid fa-fire-burner text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Culinary Arts</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">A multi-cuisine explorer and food enthusiast. I love experimenting in the kitchen, blending flavors, and trying out diverse cultural dishes.</p>
+                </div>
+                <div class="p-8 hover-card border border-primary/20 rounded-xl">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-6"><i class="fa-solid fa-gamepad text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Anime & Gaming</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Huge fan of epic storytelling and competitive fun. Favorites include Solo Leveling, One Piece, etc. and jumping into the world of SpiderMan.</p>
+                </div>
+                <div class="p-8 anime-cut hover-card border border-blue-500/20" style="clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);">
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 mb-6"><i class="fa-solid fa-guitar text-xl"></i></div>
+                    <h3 class="text-xl font-bold text-white mb-3">Acoustic Guitar</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Music provides a creative reset. I spend my downtime practicing chords, learning new riffs, and unwinding with the acoustic guitar.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-24 border-b border-slate-800 bg-black/40 backdrop-blur-sm relative">
+        <div class="max-w-3xl mx-auto px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 font-tech tracking-wider uppercase"><span class="text-primary text-glow">Data</span> Query</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Frequently asked questions regarding my profile, skills, and background.</p>
+            </div>
+            <div class="space-y-4" id="accordion-container">
+                <div class="accordion-item bg-cardbg/80 border border-slate-700/50 rounded-xl overflow-hidden backdrop-blur-md">
+                    <button type="button" class="accordion-header w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none"><span class="font-semibold text-lg">What are your major academic achievements?</span><i class="fa-solid fa-chevron-down accordion-icon transition-transform duration-300 text-secondary"></i></button>
+                    <div class="accordion-content bg-slate-900/90"><div class="accordion-inner"><p class="px-6 py-5 text-slate-300 border-t border-slate-800/50">I hold a highly distinguished academic record with <strong>30 Olympiad medals</strong> spanning Gold, Silver, and Bronze categories. Additionally, I was the CBSE Grade 10 Top Scorer with <strong>94%</strong>.</p></div></div>
+                </div>
+                <div class="accordion-item bg-cardbg/80 border border-slate-700/50 rounded-xl overflow-hidden backdrop-blur-md">
+                    <button type="button" class="accordion-header w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none"><span class="font-semibold text-lg">Where are you in your CA journey?</span><i class="fa-solid fa-chevron-down accordion-icon transition-transform duration-300 text-secondary"></i></button>
+                    <div class="accordion-content bg-slate-900/90"><div class="accordion-inner"><p class="px-6 py-5 text-slate-300 border-t border-slate-800/50">I am an active CA Aspirant currently focused on advancing toward my CA finals. I am deeply studying auditing, corporate taxation, and advanced financial management.</p></div></div>
+                </div>
+                <div class="accordion-item bg-cardbg/80 border border-slate-700/50 rounded-xl overflow-hidden backdrop-blur-md">
+                    <button type="button" class="accordion-header w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none"><span class="font-semibold text-lg">How do Finance, AI, and Design connect for you?</span><i class="fa-solid fa-chevron-down accordion-icon transition-transform duration-300 text-secondary"></i></button>
+                    <div class="accordion-content bg-slate-900/90"><div class="accordion-inner"><p class="px-6 py-5 text-slate-300 border-t border-slate-800/50">Modern accounting requires understanding the software systems businesses use. AI knowledge allows me to analyze financial data more efficiently. Design skills let me present complex data and business plans (like real estate strategies) visually, making them highly intuitive and easier to digest.</p></div></div>
+                </div>
+            </div>
+            <div class="mt-10 text-center">
+                <a href="faq.html" class="inline-flex items-center gap-2 px-6 py-3 bg-transparent border border-primary text-primary font-tech font-bold tracking-wider uppercase text-sm hover:bg-primary hover:text-white transition-all anime-cut">View Full FAQ Archive <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <section id="socials" class="py-24 border-b border-slate-800 bg-black/60 backdrop-blur-sm relative">
+        <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8 font-tech tracking-wider uppercase"><span class="text-secondary cyan-glow">Comms</span> Network</h2>
+            <p class="text-slate-400 mb-10 max-w-2xl mx-auto">Connect with me across the web to see my latest gaming content, designs, and updates.</p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="https://youtube.com/@DragonaZenPlayzYT" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-slate-900/80 px-8 py-5 border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 hover:shadow-[0_0_25px_rgba(239,68,68,0.4)] transition-all anime-cut group">
+                    <i class="fa-brands fa-youtube text-red-500 text-3xl group-hover:scale-110 transition-transform"></i>
+                    <div class="text-left"><p class="text-xs text-slate-400 font-tech tracking-widest uppercase mb-1">YouTube</p><p class="text-white font-bold tracking-wider">@DragonaZenPlayzYT</p></div>
+                </a>
+                <a href="https://instagram.com/jaywit10" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-slate-900/80 px-8 py-5 border border-pink-500/30 hover:border-pink-500 hover:bg-pink-500/10 hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all anime-cut group">
+                    <i class="fa-brands fa-instagram text-pink-500 text-3xl group-hover:scale-110 transition-transform"></i>
+                    <div class="text-left"><p class="text-xs text-slate-400 font-tech tracking-widest uppercase mb-1">Instagram</p><p class="text-white font-bold tracking-wider">@jaywit10</p></div>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-slate-950 py-6 border-t border-slate-900 text-center relative z-10">
+    <div class="max-w-7xl mx-auto px-6">
+        <p class="text-slate-600 text-xs font-tech tracking-widest uppercase">&copy; <script>document.write(new Date().getFullYear());</script> Jayaditya Kumar.</p>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.closest('.accordion-item');
+                const isActive = item.classList.contains('active');
+                document.querySelectorAll('.accordion-item.active').forEach(activeItem => { activeItem.classList.remove('active'); });
+                if (!isActive) { item.classList.add('active'); }
+            });
+        });
+    });
+</script>
+</body>
+</html>
